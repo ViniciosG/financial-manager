@@ -480,6 +480,10 @@
   <div class="main-container">
     <!-- Header -->
     <div class="header">
+      <a href="dashboard.html" class="btn"
+        style="position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); border: 2px solid white; color: white; font-weight: 600; border-radius: 25px; padding: 0.5rem 1.5rem;">
+        <i class="fas fa-home me-2"></i>Dashboard
+      </a>
       <h1><i class="fas fa-chart-line me-3"></i>Sistema de Depósitos</h1>
       <p class="subtitle">Transforme R$ 300 em R$ 2.000.000 com 1.500 depósitos progressivos</p>
     </div>
@@ -504,40 +508,18 @@
             <input type="number" class="form-control" id="totalDeposits" value="1500" min="1">
           </div>
 
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label for="targetAmount" class="form-label">
               <i class="fas fa-bullseye me-1"></i>Meta Final (R$)
             </label>
             <input type="number" class="form-control" id="targetAmount" value="2000000" min="1" step="0.01">
           </div>
-
-          <div class="col-md-3">
-            <label for="smoothness" class="form-label">
-              <i class="fas fa-sliders-h me-1"></i>Suavidade
-            </label>
-            <select class="form-select" id="smoothness">
-              <option value="linear">Linear (300, 301, 302...)</option>
-              <option value="smooth">Suave (crescimento gradual)</option>
-              <option value="aggressive">Agressivo (crescimento acelerado)</option>
-              <option value="exponential">Exponencial (crescimento exponencial)</option>
-            </select>
-          </div>
         </div>
 
-        <div class="row mt-3" id="smoothnessControl" style="display: none;">
-          <div class="col-12">
-            <label for="smoothnessRange" class="form-label">
-              <i class="fas fa-adjust me-1"></i>Ajuste Fino da Suavidade
-            </label>
-            <div class="range-container">
-              <input type="range" class="form-range" id="smoothnessRange" min="0.1" max="2" step="0.1" value="1">
-              <div class="range-labels">
-                <span>Mais Suave</span>
-                <span>Balanceado</span>
-                <span>Mais Agressivo</span>
-              </div>
-            </div>
-          </div>
+        <div class="alert alert-info mt-3">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Como funciona:</strong> O sistema calcula automaticamente uma progressão aritmética que garante que a
+          soma de todos os depósitos atinja exatamente a sua meta final.
         </div>
 
         <div class="row mt-4">
@@ -551,9 +533,13 @@
             <button class="btn btn-warning btn-lg me-3" onclick="resetSystem()">
               <i class="fas fa-redo me-2"></i>Resetar
             </button>
-            <button class="btn btn-info btn-lg" onclick="openBackupModal()">
+            <button class="btn btn-info btn-lg me-3" onclick="openBackupModal()">
               <i class="fas fa-cloud me-2"></i>Backup & Sync
             </button>
+            <a href="investimentos.html" class="btn btn-lg"
+              style="background: var(--gradient-gold); color: var(--dark-color); font-weight: 600;">
+              <i class="fas fa-chart-pie me-2"></i>Investimentos
+            </a>
           </div>
         </div>
       </div>
@@ -590,16 +576,22 @@
 
       <!-- Segunda linha de estatísticas -->
       <div class="row mt-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="stat-card">
             <div class="stat-number" id="lastDepositValue">R$ 0,00</div>
             <div class="stat-label">Valor do Último Depósito</div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="stat-card">
             <div class="stat-number" id="averageDeposit">R$ 0,00</div>
             <div class="stat-label">Valor Médio dos Depósitos</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-number" id="totalTheorical">R$ 0,00</div>
+            <div class="stat-label">Total Teórico (Meta)</div>
           </div>
         </div>
       </div>

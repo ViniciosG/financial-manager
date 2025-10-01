@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Investimentos - FIIs e Ações</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary-color: #047857;
+            --secondary-color: #0f766e;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-color: #1f2937;
+            --light-color: #f0fdf4;
+            --gold-color: #d4af37;
+            --blue-bank: #1e40af;
+            --gradient-primary: linear-gradient(135deg, #047857 0%, #0f766e 100%);
+            --gradient-secondary: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            --gradient-success: linear-gradient(135deg, #059669 0%, #047857 100%);
+            --gradient-gold: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #047857 0%, #1e40af 50%, #d4af37 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 2rem auto;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-tabs {
+            background: #f8f9fa;
+            padding: 1rem 2rem 0;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6b7280;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background: rgba(4, 120, 87, 0.1);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background: var(--gradient-primary);
+            border: none;
+        }
+
+        .config-section {
+            padding: 2rem;
+            background: var(--light-color);
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid var(--gold-color);
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(4, 120, 87, 0.25);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--gradient-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .magic-number {
+            font-size: 4rem;
+            font-weight: 800;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin: 2rem 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .fii-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fii-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(4, 120, 87, 0.2);
+        }
+
+        .fii-card.selected {
+            border-color: var(--gold-color);
+            background: var(--gradient-gold);
+            color: var(--dark-color);
+        }
+
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 2rem 0;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: white;
+            color: var(--primary-color);
+            transform: translateX(-5px);
+        }
+
+        .stat-box {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <a href="dashboard.html" class="back-button">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+            <a href="indicacoes.html" class="back-button"
+                style="left: auto; right: 20px; background: var(--gradient-gold);">
+                <i class="fas fa-star me-2"></i>Indicações
+            </a>
+            <h1><i class="fas fa-chart-line me-3"></i>Calculadora de Investimentos</h1>
+            <p class="subtitle">Planeje seu futuro com FIIs, Ações e o Número Mágico</p>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#numeroMagico">
+                    <i class="fas fa-magic me-2"></i>Número Mágico
+                </a>
+            </li>
+            <li class="nav-item">
+            <li class="nav-link" data-bs-toggle="tab" href="#fiis">
+                <i class="fas fa-building me-2"></i>FIIs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#acoes">
+                    <i class="fas fa-chart-bar me-2"></i>Ações
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#bolaDeNeve">
+                    <i class="fas fa-snowflake me-2"></i>Efeito Bola de Neve
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#acompanhamento">
+                    <i class="fas fa-tasks me-2"></i>Meu Acompanhamento
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+
+            <!-- Número Mágico Tab -->
+            <div class="tab-pane fade show active" id="numeroMagico">
+                <div class="config-section">
+                    <div class="config-card">
+                        <h3 class="mb-4"><i class="fas fa-magic me-2"></i>Calculadora do Número Mágico</h3>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>O que é o Número Mágico?</strong> É o valor total que você precisa investir para
+                            viver de renda passiva, baseado no dividend yield médio dos seus investimentos.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>Renda Mensal Desejada (R$)
+                                </label>
+                                <input type="number" class="form-control" id="rendaDesejada" value="5000" min="0"
+                                    step="100">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-percentage me-1"></i>Dividend Yield Médio (% ao ano)
+                                </label>
+                                <input type="number" class="form-control" id="dividendYield" value="8" min="0.1"
+                                    max="100" step="0.1">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Prazo para Atingir (anos)
+                                </label>
+                                <input type="number" class="form-control" id="prazoAnos" value="10" min="1" max="50">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fas fa-piggy-bank me-1"></i>Aporte Mensal (R$)
+                                </label>
+                                <input type="number" class="form-control" id="aporteMensal" value="1000" min="0"
+                                    step="100">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fas fa-percentage me-1"></i>Rentabilidade Anual (% ao ano)
+                                </label>
+                                <input type="number" class="form-control" id="rentabilidadeAnual" value="10" min="0"
+                                    max="100" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary btn-lg" onclick="calcularNumeroMagico()">
+                                <i class="fas fa-calculator me-2"></i>Calcular Número Mágico
+                            </button>
+                        </div>
+
+                        <div id="resultadoNumeroMagico"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIIs Tab -->
+            <div class="tab-pane fade" id="fiis">
+                <div class="config-section">
+                    <div class="config-card">
+                        <h3 class="mb-4"><i class="fas fa-building me-2"></i>Fundos Imobiliários (FIIs)</h3>
+
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Cotações em Tempo Real!</strong> Integrado com a API Brapi - dados atualizados da
+                            B3.
+                            <br><small>Busque qualquer FII da bolsa brasileira (ex: HGLG11, KNRI11, MXRF11,
+                                XPML11...)</small>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="searchFii"
+                                    placeholder="Buscar FII (ex: HGLG11, KNRI11, MXRF11...)">
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" onclick="buscarFIIs()">
+                                    <i class="fas fa-search me-2"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="listaFIIs" class="row"></div>
+                        <div id="resultadoFIIs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Tab -->
+            <div class="tab-pane fade" id="acoes">
+                <div class="config-section">
+                    <div class="config-card">
+                        <h3 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Ações</h3>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="searchAcao"
+                                    placeholder="Buscar Ação (ex: PETR4, VALE3, ITUB4...)">
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" onclick="buscarAcoes()">
+                                    <i class="fas fa-search me-2"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="listaAcoes" class="row"></div>
+                        <div id="resultadoAcoes"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Efeito Bola de Neve Tab -->
+            <div class="tab-pane fade" id="bolaDeNeve">
+                <div class="config-section">
+                    <div class="config-card">
+                        <h3 class="mb-4"><i class="fas fa-snowflake me-2"></i>Simulador de Efeito Bola de Neve</h3>
+
+                        <div class="alert alert-success">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Efeito Bola de Neve:</strong> Reinvista os dividendos recebidos para comprar mais
+                            ativos, aumentando exponencialmente sua renda passiva!
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">
+                                    <i class="fas fa-building me-1"></i>Selecione o FII para Simular
+                                </label>
+                                <select class="form-select" id="fiiSelecionado"
+                                    onchange="investmentSystem.atualizarDYdoFII()">
+                                    <option value="manual">Manual (Informar DY manualmente)</option>
+                                    <option value="HGLG11">HGLG11 - CSHG Logística</option>
+                                    <option value="KNRI11">KNRI11 - Kinea Renda Imobiliária</option>
+                                    <option value="MXRF11">MXRF11 - Maxi Renda</option>
+                                    <option value="XPML11">XPML11 - XP Malls</option>
+                                    <option value="VILG11">VILG11 - Vinci Logística</option>
+                                    <option value="BTLG11">BTLG11 - BTG Logística</option>
+                                    <option value="KNCR11">KNCR11 - Kinea Crédito Imobiliário</option>
+                                    <option value="VISC11">VISC11 - Vinci Shopping Centers</option>
+                                </select>
+                                <small class="text-muted">Sistema buscará dados reais do FII selecionado</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-coins me-1"></i>Investimento Inicial (R$)
+                                </label>
+                                <input type="number" class="form-control" id="investimentoInicial" value="10000" min="0"
+                                    step="1000">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar-plus me-1"></i>Aporte Mensal (R$)
+                                </label>
+                                <input type="number" class="form-control" id="aporteBolaDeNeve" value="500" min="0"
+                                    step="100">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-percentage me-1"></i>DY Médio (% ao mês)
+                                </label>
+                                <input type="number" class="form-control" id="dyMensal" value="0.7" min="0" max="10"
+                                    step="0.1">
+                                <small class="text-muted" id="dyInfo">DY médio estimado</small>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-clock me-1"></i>Período (anos)
+                                </label>
+                                <input type="number" class="form-control" id="periodoBolaDeNeve" value="20" min="1"
+                                    max="50">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-recycle me-1"></i>Reinvestimento de Dividendos
+                                </label>
+                                <select class="form-select" id="reinvestimento">
+                                    <option value="100">100% (Bola de Neve Total)</option>
+                                    <option value="75">75%</option>
+                                    <option value="50">50%</option>
+                                    <option value="25">25%</option>
+                                    <option value="0">0% (Sem Reinvestimento)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fas fa-chart-line me-1"></i>Valorização Anual (%)
+                                </label>
+                                <input type="number" class="form-control" id="valorizacaoAnual" value="5" min="0"
+                                    max="100" step="0.5">
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary btn-lg" onclick="simularBolaDeNeve()">
+                                <i class="fas fa-play me-2"></i>Simular Efeito Bola de Neve
+                            </button>
+                        </div>
+
+                        <div id="resultadoBolaDeNeve"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acompanhamento Tab -->
+            <div class="tab-pane fade" id="acompanhamento">
+                <div class="config-section">
+                    <div class="config-card">
+                        <h3 class="mb-4"><i class="fas fa-tasks me-2"></i>Acompanhamento de Aportes e Dividendos</h3>
+
+                        <div class="alert alert-success">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Como funciona:</strong> Registre cada aporte que fizer e o sistema calculará
+                            automaticamente seus dividendos mensais, quantidade de cotas e evolução do patrimônio.
+                        </div>
+
+                        <!-- Resumo do Portfólio -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stat-box">
+                                    <div class="stat-value" id="totalInvestidoAcomp">R$ 0,00</div>
+                                    <div class="stat-label">Total Investido</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box" style="background: var(--gradient-gold)">
+                                    <div class="stat-value" id="totalCotasAcomp">0</div>
+                                    <div class="stat-label">Total de Cotas</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box" style="background: var(--gradient-success)">
+                                    <div class="stat-value" id="dividendosMesAcomp">R$ 0,00</div>
+                                    <div class="stat-label">Dividendos/Mês Estimado</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box" style="background: var(--gradient-secondary)">
+                                    <div class="stat-value" id="patrimonioAtualAcomp">R$ 0,00</div>
+                                    <div class="stat-label">Patrimônio Atual</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formulário de Novo Aporte -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Registrar Novo Aporte</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">FII/Ação</label>
+                                        <input type="text" class="form-control" id="aporteAtivo"
+                                            placeholder="Ex: HGLG11" list="ativosList">
+                                        <datalist id="ativosList">
+                                            <option value="HGLG11">
+                                            <option value="KNRI11">
+                                            <option value="MXRF11">
+                                            <option value="XPML11">
+                                            <option value="VILG11">
+                                            <option value="BTLG11">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Quantidade</label>
+                                        <input type="number" class="form-control" id="aporteQuantidade" min="1" step="1"
+                                            placeholder="10">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Preço/Cota (R$)</label>
+                                        <input type="number" class="form-control" id="aportePreco" min="0" step="0.01"
+                                            placeholder="165.50">
+                                        <small><a href="#"
+                                                onclick="investmentSystem.buscarPrecoAtual(); return false;">Buscar
+                                                preço atual</a></small>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Data</label>
+                                        <input type="date" class="form-control" id="aporteData">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button class="btn btn-success w-100" onclick="registrarAporte()">
+                                            <i class="fas fa-check me-1"></i>Registrar Aporte
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Aportes -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Histórico de Aportes</h5>
+                                <button class="btn btn-sm btn-outline-primary"
+                                    onclick="investmentSystem.calcularDividendos()">
+                                    <i class="fas fa-calculator me-1"></i>Calcular Dividendos do Mês
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Ativo</th>
+                                                <th>Qtd</th>
+                                                <th>Preço</th>
+                                                <th>Total</th>
+                                                <th>DY Mensal</th>
+                                                <th>Dividendos/Mês</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaAportes">
+                                            <tr>
+                                                <td colspan="8" class="text-center text-muted">
+                                                    Nenhum aporte registrado ainda. Comece registrando seu primeiro
+                                                    aporte!
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Previsão de Dividendos -->
+                        <div class="card mt-4" id="previsaoDividendos" style="display: none;">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Previsão de Dividendos</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="calendarioDividendos"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico de Evolução -->
+                        <div class="card mt-4" id="graficoEvolucao" style="display: none;">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Evolução do Patrimônio</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="chartAcompanhamento"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="investimentos.js"></script>
+</body>
+
+</html>

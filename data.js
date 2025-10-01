@@ -4,9 +4,7 @@ class DepositSystem {
         this.config = {
             initialValue: 300,
             totalDeposits: 1500,
-            targetAmount: 2000000,
-            smoothness: 'linear',
-            smoothnessFactor: 1.0
+            targetAmount: 2000000
         };
 
         this.data = {
@@ -79,27 +77,18 @@ class DepositSystem {
         document.getElementById('initialValue').value = this.config.initialValue;
         document.getElementById('totalDeposits').value = this.config.totalDeposits;
         document.getElementById('targetAmount').value = this.config.targetAmount;
-        document.getElementById('smoothness').value = this.config.smoothness;
-        document.getElementById('smoothnessRange').value = this.config.smoothnessFactor;
     }
 
     // Inicializar event listeners
     initializeEventListeners() {
-        // Evento para mostrar/ocultar controle de suavidade
-        document.getElementById('smoothness').addEventListener('change', (e) => {
-            const smoothnessControl = document.getElementById('smoothnessControl');
-            if (e.target.value === 'smooth' || e.target.value === 'aggressive') {
-                smoothnessControl.style.display = 'block';
-            } else {
-                smoothnessControl.style.display = 'none';
-            }
-        });
-
         // Eventos para atualizar configuração em tempo real
-        ['initialValue', 'totalDeposits', 'targetAmount', 'smoothness', 'smoothnessRange'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
-                this.updateConfig();
-            });
+        ['initialValue', 'totalDeposits', 'targetAmount'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', () => {
+                    this.updateConfig();
+                });
+            }
         });
 
         // Definir data atual nos campos de data
@@ -115,80 +104,32 @@ class DepositSystem {
         this.config.initialValue = parseFloat(document.getElementById('initialValue').value) || 300;
         this.config.totalDeposits = parseInt(document.getElementById('totalDeposits').value) || 1500;
         this.config.targetAmount = parseFloat(document.getElementById('targetAmount').value) || 2000000;
-        this.config.smoothness = document.getElementById('smoothness').value;
-        this.config.smoothnessFactor = parseFloat(document.getElementById('smoothnessRange').value) || 1.0;
     }
 
     // Calcular valores dos depósitos baseado na configuração
     calculateDepositValues() {
         const values = [];
-        const { initialValue, totalDeposits, targetAmount, smoothness, smoothnessFactor } = this.config;
+        const { initialValue, totalDeposits, targetAmount } = this.config;
 
-        switch (smoothness) {
-            case 'linear':
-                // Progressão linear simples: 300, 301, 302, 303...
-                for (let i = 0; i < totalDeposits; i++) {
-                    values.push(initialValue + i);
-                }
-                break;
+        // Calcular valor final necessário para atingir meta exata
+        // Fórmula da Progressão Aritmética: Soma = n * (primeiro + último) / 2
+        // Resolvendo para o último valor: último = (2 * Soma / n) - primeiro
+        const lastValue = (2 * targetAmount / totalDeposits) - initialValue;
+        const increment = (lastValue - initialValue) / (totalDeposits - 1);
 
-            case 'smooth':
-                // Progressão suave para atingir a meta exata
-                const lastValueSmooth = (2 * targetAmount / totalDeposits) - initialValue;
-                const incrementSmooth = (lastValueSmooth - initialValue) / (totalDeposits - 1);
+        // Gerar progressão aritmética
+        for (let i = 0; i < totalDeposits; i++) {
+            const value = initialValue + (increment * i);
+            values.push(Math.round(value * 100) / 100);
+        }
 
-                for (let i = 0; i < totalDeposits; i++) {
-                    // Aplicar fator de suavidade (curva)
-                    const progress = i / (totalDeposits - 1);
-                    const smoothFactor = Math.pow(progress, 1 / smoothnessFactor);
-                    const value = initialValue + (incrementSmooth * totalDeposits * smoothFactor / totalDeposits * i);
-                    values.push(Math.round(value * 100) / 100);
-                }
-                break;
+        // Verificação final: ajustar último valor se necessário para compensar arredondamentos
+        const currentTotal = values.reduce((sum, v) => sum + v, 0);
+        const difference = targetAmount - currentTotal;
 
-            case 'aggressive':
-                // Progressão agressiva para atingir a meta exata
-                const lastValueAgg = (2 * targetAmount / totalDeposits) - initialValue;
-                const incrementAgg = (lastValueAgg - initialValue) / (totalDeposits - 1);
-
-                for (let i = 0; i < totalDeposits; i++) {
-                    // Aplicar fator agressivo (curva exponencial)
-                    const progress = i / (totalDeposits - 1);
-                    const aggressiveFactor = Math.pow(progress, smoothnessFactor);
-                    const value = initialValue + (incrementAgg * totalDeposits * aggressiveFactor / totalDeposits * i);
-                    values.push(Math.round(value * 100) / 100);
-                }
-                break;
-
-            case 'exponential':
-                // Progressão exponencial para atingir a meta
-                // Calcular taxa de crescimento necessária
-                const averageValue = targetAmount / totalDeposits;
-                const growthRate = Math.pow(averageValue / initialValue, 1 / (totalDeposits - 1));
-
-                for (let i = 0; i < totalDeposits; i++) {
-                    const value = initialValue * Math.pow(growthRate, i);
-                    values.push(Math.round(value * 100) / 100);
-                }
-
-                // Ajustar para atingir meta exata
-                const currentTotal = values.reduce((sum, v) => sum + v, 0);
-                const adjustmentFactor = targetAmount / currentTotal;
-
-                for (let i = 0; i < values.length; i++) {
-                    values[i] = Math.round(values[i] * adjustmentFactor * 100) / 100;
-                }
-                break;
-
-            default:
-                // Progressão aritmética para atingir meta exata
-                const lastValue = (2 * targetAmount / totalDeposits) - initialValue;
-                const increment = (lastValue - initialValue) / (totalDeposits - 1);
-
-                for (let i = 0; i < totalDeposits; i++) {
-                    const value = initialValue + (increment * i);
-                    values.push(Math.round(value * 100) / 100);
-                }
+        if (Math.abs(difference) > 0.01) {
+            // Ajustar o último depósito para garantir meta exata
+            values[values.length - 1] = Math.round((values[values.length - 1] + difference) * 100) / 100;
         }
 
         return values;
@@ -221,12 +162,26 @@ class DepositSystem {
             this.data.deposits = newDeposits;
             this.recalculateStats();
             this.saveData();
-            this.updateUI();
+        this.updateUI();
             this.showLoading(false);
 
-            // Mostrar resultado do cálculo
+            // Mostrar resultado do cálculo com validação
             const totalCalculated = values.reduce((sum, value) => sum + value, 0);
-            this.showAlert('success', `Depósitos calculados com sucesso! Total teórico: ${this.formatCurrency(totalCalculated)}`);
+            const metaAtingida = Math.abs(totalCalculated - this.config.targetAmount) < 1;
+
+            const alertType = metaAtingida ? 'success' : 'warning';
+            const checkIcon = metaAtingida ? '✅' : '⚠️';
+            const message = `
+                ${checkIcon} <strong>Depósitos Calculados!</strong><br>
+                📊 Total de depósitos: ${this.config.totalDeposits}<br>
+                💰 Primeiro depósito: ${this.formatCurrency(values[0])}<br>
+                💎 Último depósito: ${this.formatCurrency(values[values.length - 1])}<br>
+                🎯 Total calculado: ${this.formatCurrency(totalCalculated)}<br>
+                🏆 Meta definida: ${this.formatCurrency(this.config.targetAmount)}<br>
+                ${metaAtingida ? '✅ <strong>Meta atingida perfeitamente!</strong>' : '⚠️ Diferença: ' + this.formatCurrency(Math.abs(totalCalculated - this.config.targetAmount))}
+            `;
+
+            this.showAlert(alertType, message);
         }, 500);
     }
 
@@ -313,8 +268,8 @@ class DepositSystem {
 
         // Recalcular estatísticas
         this.recalculateStats();
-        this.saveData();
-        this.updateUI();
+            this.saveData();
+            this.updateUI();
 
         // Fechar modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('depositModal'));
@@ -386,7 +341,7 @@ class DepositSystem {
                     <div class="deposit-amount">${this.formatCurrency(deposit.amount)}</div>
                     <div class="deposit-status">${statusText}</div>
                     ${deposit.completed ? `<small class="mt-1">💰 ${this.formatCurrency(deposit.actualAmount)}</small>` : ''}
-                </div>
+                    </div>
             `;
         }).join('');
 
@@ -459,6 +414,21 @@ class DepositSystem {
             const totalValue = this.data.deposits.reduce((sum, d) => sum + d.amount, 0);
             const average = this.data.deposits.length > 0 ? totalValue / this.data.deposits.length : 0;
             averageDepositElement.textContent = this.formatCurrency(average);
+        }
+
+        // Total teórico (meta)
+        const totalTheoricalElement = document.getElementById('totalTheorical');
+        if (totalTheoricalElement) {
+            const totalTheorical = this.data.deposits.reduce((sum, d) => sum + d.amount, 0);
+            totalTheoricalElement.textContent = this.formatCurrency(totalTheorical);
+
+            // Verificar se está próximo da meta
+            const difference = Math.abs(totalTheorical - this.config.targetAmount);
+            if (difference < 1) {
+                totalTheoricalElement.parentElement.style.borderTop = '3px solid #d4af37';
+            } else {
+                totalTheoricalElement.parentElement.style.borderTop = '3px solid #059669';
+            }
         }
     }
 
@@ -773,7 +743,7 @@ class DepositSystem {
                 this.showAlert('success', `Backup salvo no GitHub! <a href="${gistUrl}" target="_blank">Ver Gist</a>`);
                 this.backupSettings.lastBackupDate = new Date().toISOString();
                 this.saveData();
-            } else {
+        } else {
                 throw new Error('Erro ao criar Gist: ' + response.status);
             }
         } catch (error) {
@@ -932,7 +902,7 @@ class DepositSystem {
                 <small>Último backup: ${lastBackup}</small>
             `;
             statusElement.className = 'text-success';
-        } else {
+    } else {
             statusElement.textContent = 'Backup automático desativado';
             statusElement.className = 'text-warning';
         }

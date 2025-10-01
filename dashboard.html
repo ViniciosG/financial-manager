@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema Financeiro Completo</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary-color: #047857;
+            --secondary-color: #0f766e;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --gold-color: #d4af37;
+            --blue-bank: #1e40af;
+            --gradient-primary: linear-gradient(135deg, #047857 0%, #0f766e 100%);
+            --gradient-gold: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            --gradient-blue: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #047857 0%, #1e40af 50%, #d4af37 100%);
+            min-height: 100vh;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            max-width: 1600px;
+            margin: 2rem auto;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-stat {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .widget-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .widget-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .widget-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .quick-action-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(4, 120, 87, 0.3);
+            color: white;
+        }
+
+        .quick-action-btn.gold {
+            background: var(--gradient-gold);
+            color: #1f2937;
+        }
+
+        .quick-action-btn.gold:hover {
+            color: #1f2937;
+        }
+
+        .quick-action-btn.blue {
+            background: var(--gradient-blue);
+        }
+
+        .progress-widget {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-custom {
+            height: 12px;
+            border-radius: 6px;
+            background: #e5e7eb;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        .stat-mini {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-mini-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .stat-mini-value {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 1rem 0;
+        }
+
+        .alert-custom {
+            border-left: 4px solid;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-info-custom {
+            background: #eff6ff;
+            border-color: #1e40af;
+            color: #1e3a8a;
+        }
+
+        .alert-success-custom {
+            background: #f0fdf4;
+            border-color: #059669;
+            color: #065f46;
+        }
+
+        .alert-warning-custom {
+            background: #fffbeb;
+            border-color: #d97706;
+            color: #92400e;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .action-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.2);
+            color: inherit;
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-desc {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Header com Estatísticas Principais -->
+        <div class="header">
+            <h1 class="text-center mb-3">
+                <i class="fas fa-chart-line me-3"></i>Dashboard Financeiro
+            </h1>
+
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value" id="patrimonioTotal">R$ 0,00</div>
+                    <div class="header-stat-label">Patrimônio Total</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="rendaMensal">R$ 0,00</div>
+                    <div class="header-stat-label">Renda Passiva/Mês</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="progressoGeral">0%</div>
+                    <div class="header-stat-label">Progresso Geral</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="proximoDividendo">R$ 0,00</div>
+                    <div class="header-stat-label">Próximos Dividendos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="content-section">
+
+            <!-- Alertas e Notificações -->
+            <div id="alertasContainer"></div>
+
+            <!-- Grid Principal -->
+            <div class="row">
+
+                <!-- Coluna Esquerda -->
+                <div class="col-lg-8">
+
+                    <!-- Depósitos Progressivos -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-piggy-bank me-2"></i>Depósitos Progressivos
+                            </div>
+                            <a href="index.html" class="quick-action-btn btn-sm">
+                                <i class="fas fa-arrow-right me-1"></i>Ver Mais
+                            </a>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Total Economizado</span>
+                                    <span class="stat-mini-value" id="depositoTotal">R$ 0,00</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Depósito Atual</span>
+                                    <span class="stat-mini-value" id="depositoAtual">#1</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Meta Final</span>
+                                    <span class="stat-mini-value" id="depositoMeta">R$ 2.000.000</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Próximo Valor</span>
+                                    <span class="stat-mini-value" id="depositoProximo">R$ 300,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="progress-widget mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small>Progresso</small>
+                                <small id="depositoProgress">0%</small>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill" id="depositoProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Investimentos em FIIs -->
+                    <div class="widget-card" style="border-left-color: #d4af37;">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-building me-2"></i>Investimentos em FIIs
+                            </div>
+                            <a href="investimentos.html#acompanhamento" class="quick-action-btn btn-sm gold">
+                                <i class="fas fa-arrow-right me-1"></i>Ver Mais
+                            </a>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Total Investido</span>
+                                    <span class="stat-mini-value" id="fiisInvestido">R$ 0,00</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Total de Cotas</span>
+                                    <span class="stat-mini-value" id="fiisCotas">0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Dividendos/Mês</span>
+                                    <span class="stat-mini-value text-success" id="fiisDividendos">R$ 0,00</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="stat-mini-label">Aportes Realizados</span>
+                                    <span class="stat-mini-value" id="fiisAportes">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Principal -->
+                    <div class="widget-card" style="border-left-color: #1e40af;">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-chart-area me-2"></i>Evolução do Patrimônio
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartPatrimonio"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Coluna Direita -->
+                <div class="col-lg-4">
+
+                    <!-- Próximas Ações -->
+                    <div class="widget-card" style="border-left-color: #d4af37;">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-tasks me-2"></i>Próximas Ações
+                            </div>
+                        </div>
+                        <div id="proximasAcoes">
+                            <div class="alert-custom alert-info-custom">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Calcule seus depósitos</strong>
+                                <br><small>Configure e calcule sua progressão</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Número Mágico -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-magic me-2"></i>Número Mágico
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div style="font-size: 2.5rem; font-weight: 800; background: var(--gradient-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"
+                                id="numeroMagicoValor">
+                                R$ 0,00
+                            </div>
+                            <p class="text-muted mb-3">Para viver de renda</p>
+                            <a href="investimentos.html#numeroMagico" class="quick-action-btn btn-sm gold">
+                                <i class="fas fa-calculator me-1"></i>Calcular
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Top FIIs Recomendados -->
+                    <div class="widget-card" style="border-left-color: #059669;">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-star me-2"></i>Top FIIs
+                            </div>
+                            <a href="indicacoes.html" class="quick-action-btn btn-sm"
+                                style="background: var(--gradient-gold); color: #1f2937;">
+                                <i class="fas fa-arrow-right me-1"></i>Ver Todos
+                            </a>
+                        </div>
+                        <div id="topFIIsMini"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="widget-card mt-4" style="border-left-color: #1e40af;">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </div>
+                </div>
+
+                <div class="quick-actions-grid">
+                    <a href="index.html" class="action-card">
+                        <div class="action-icon">💰</div>
+                        <div class="action-title">Depósitos</div>
+                        <div class="action-desc">Gerenciar depósitos progressivos</div>
+                    </a>
+
+                    <a href="investimentos.html#acompanhamento" class="action-card">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Registrar Aporte</div>
+                        <div class="action-desc">Adicionar novo investimento</div>
+                    </a>
+
+                    <a href="investimentos.html#numeroMagico" class="action-card">
+                        <div class="action-icon">🔮</div>
+                        <div class="action-title">Número Mágico</div>
+                        <div class="action-desc">Calcular independência financeira</div>
+                    </a>
+
+                    <a href="investimentos.html#bolaDeNeve" class="action-card">
+                        <div class="action-icon">❄️</div>
+                        <div class="action-title">Bola de Neve</div>
+                        <div class="action-desc">Simular reinvestimento</div>
+                    </a>
+
+                    <a href="indicacoes.html" class="action-card">
+                        <div class="action-icon">⭐</div>
+                        <div class="action-title">Indicações</div>
+                        <div class="action-desc">FIIs recomendados</div>
+                    </a>
+
+                    <a href="javascript:void(0)" onclick="abrirBackup()" class="action-card">
+                        <div class="action-icon">☁️</div>
+                        <div class="action-title">Backup</div>
+                        <div class="action-desc">Salvar seus dados</div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
