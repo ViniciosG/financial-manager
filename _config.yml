@@ -1,0 +1,7 @@
+# Configuração do GitHub Pages
+# Este arquivo desabilita o processamento Jekyll
+
+# Definir como vazio para não processar
+plugins: []
+exclude: []
+
